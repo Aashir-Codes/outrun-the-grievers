@@ -171,8 +171,49 @@ class MinimaxAgent(MultiAgentSearchAgent):
         natural way to write this. Work out which agent moves next, and when
         the depth goes up.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+
+        def value(state, agentIndex, depth):
+            if depth == self.depth or state.isWin() or state.isLose():
+                return self.evaluationFunction(state)
+
+            actions = state.getLegalActions(agentIndex)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+
+            nextAgent = (agentIndex + 1) % numAgents
+            nextDepth = depth + 1 if nextAgent == 0 else depth
+
+            if agentIndex == 0:
+                best = float('-inf')
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+                    v = value(successor, nextAgent, nextDepth)
+                    if v > best:
+                        best = v
+                return best
+            else:
+                best = float('inf')
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+                    v = value(successor, nextAgent, nextDepth)
+                    if v < best:
+                        best = v
+                return best
+
+        bestAction = None
+        bestVal = float('-inf')
+        nextAgent = 1 % numAgents
+        nextDepth = 1 if nextAgent == 0 else 0
+
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            v = value(successor, nextAgent, nextDepth)
+            if v > bestVal:
+                bestVal = v
+                bestAction = action
+
+        return bestAction
 
 
 # ----------------------------------------------------------------------
