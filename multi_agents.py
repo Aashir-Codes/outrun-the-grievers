@@ -297,8 +297,47 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         plies. Model every Griever as choosing uniformly at random among its
         legal actions, so a Griever's value is the AVERAGE of its children.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+
+        def value(state, agentIndex, depth):
+            if depth == self.depth or state.isWin() or state.isLose():
+                return self.evaluationFunction(state)
+
+            actions = state.getLegalActions(agentIndex)
+            if len(actions) == 0:
+                return self.evaluationFunction(state)
+
+            nextAgent = (agentIndex + 1) % numAgents
+            nextDepth = depth + 1 if nextAgent == 0 else depth
+
+            if agentIndex == 0:
+                best = float('-inf')
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+                    v = value(successor, nextAgent, nextDepth)
+                    if v > best:
+                        best = v
+                return best
+            else:
+                total = 0.0
+                for action in actions:
+                    successor = state.generateSuccessor(agentIndex, action)
+                    total += value(successor, nextAgent, nextDepth)
+                return total / len(actions)
+
+        bestAction = None
+        bestVal = float('-inf')
+        nextAgent = 1 % numAgents
+        nextDepth = 1 if nextAgent == 0 else 0
+
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            v = value(successor, nextAgent, nextDepth)
+            if v > bestVal:
+                bestVal = v
+                bestAction = action
+
+        return bestAction
 
 
 # ----------------------------------------------------------------------
