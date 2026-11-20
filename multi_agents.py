@@ -350,10 +350,56 @@ def betterEvaluationFunction(currentGameState):
     Unlike the Q1 evaluation function, this one scores a STATE, not an
     action. Describe what it does here and in your report:
 
-    DESCRIPTION: <write something here>
+    DESCRIPTION: Combines the current score with the distance to the nearest
+    key (or exit), the minimum spanning tree distance of the remaining keys
+    and exit, a penalty per remaining key, and a small danger penalty for
+    very close Grievers.
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    if currentGameState.isWin():
+        return currentGameState.getScore() + 10000
+    if currentGameState.isLose():
+        return currentGameState.getScore() - 10000
+
+    pos = currentGameState.getRunnerPosition()
+    keys = list(currentGameState.getKeys())
+    exitPos = currentGameState.getExit()
+    grievers = currentGameState.getGrieverPositions()
+
+    score = currentGameState.getScore()
+
+    if len(keys) > 0:
+        minDist = min([currentGameState.mazeDistance(pos, k) for k in keys])
+
+        nodes = keys + [exitPos]
+        visited = [nodes[0]]
+        unvisited = nodes[1:]
+        mstDist = 0
+        while len(unvisited) > 0:
+            bestD = float('inf')
+            bestNode = unvisited[0]
+            for u in visited:
+                for v in unvisited:
+                    d = currentGameState.mazeDistance(u, v)
+                    if d < bestD:
+                        bestD = d
+                        bestNode = v
+            mstDist += bestD
+            visited.append(bestNode)
+            unvisited.remove(bestNode)
+
+        score -= 2.0 * minDist
+        score -= 1.5 * mstDist
+        score -= 150 * len(keys)
+    else:
+        exitDist = currentGameState.mazeDistance(pos, exitPos)
+        score -= 2.0 * exitDist
+
+    for g in grievers:
+        gd = currentGameState.mazeDistance(pos, g)
+        if gd <= 1:
+            score -= 60
+
+    return score
 
 
 # Abbreviation
