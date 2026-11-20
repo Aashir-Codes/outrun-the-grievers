@@ -4,4 +4,5 @@
 !*.maze
 !mazes/
 !.gitignore
+!README.md
 
